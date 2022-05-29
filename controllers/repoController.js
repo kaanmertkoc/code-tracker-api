@@ -8,8 +8,8 @@ dotenv.config();
 const getRepos = asnycHandler(async (req, res) => {
   const { access_token } = req.body;
 
-  if (access_token === undefined || access_token === "") {
-    res.status(401).json("Token is not provided. Not authorized. ");
+  if (access_token === undefined || access_token === '') {
+    res.status(401).json('Token is not provided. Not authorized. ');
     return;
   }
 
@@ -17,14 +17,15 @@ const getRepos = asnycHandler(async (req, res) => {
     auth: access_token,
   });
   const { data } = await octokit.repos.listForAuthenticatedUser({
-    visibility: "all",
-    per_page: "100",
-    affiliation: "owner",
+    visibility: 'all',
+    per_page: '100',
+    affiliation: 'owner',
+    sort: 'updated',
   });
   let repos = [];
   for (let i = 0; i < data.length; i++) {
     const { data: commitsPerWeek } = await axios.post(
-      "http://localhost:5000/api/commits/weekly",
+      'http://localhost:5002/api/commits/weekly',
       { repoName: data[i].full_name, access_token }
     );
 
@@ -33,7 +34,7 @@ const getRepos = asnycHandler(async (req, res) => {
     repos.push({
       id: data[i].id,
       full_name: data[i].full_name,
-      language: data[i].language === null ? "none" : data[i].language,
+      language: data[i].language === null ? 'none' : data[i].language,
       commitsPerWeek,
     });
   }
@@ -41,12 +42,32 @@ const getRepos = asnycHandler(async (req, res) => {
   res.status(200).json(repos);
 });
 
+const getStarredRpoes = asnycHandler(async (req, res) => {
+  const { access_token } = req.body;
+
+  if (access_token === undefined || access_token === '') {
+    res.status(401).json('Token is not provided. Not authorized. ');
+    return;
+  }
+
+  const octokit = new Octokit({
+    auth: access_token,
+  });
+  const { data } =
+    await octokit.rest.activity.listReposStarredByAuthenticatedUser({
+      direction: 'desc',
+    });
+
+  console.log('data is ', data);
+  res.status(200).json(data);
+});
+
 const listLanguages = asnycHandler(async (req, res) => {
   const { access_token, repoName } = req.body;
-  const [owner, repo] = repoName.split("/");
+  const [owner, repo] = repoName.split('/');
 
-  if (access_token === undefined || access_token === "") {
-    res.status(401).json("Token is not provided. Not authorized. ");
+  if (access_token === undefined || access_token === '') {
+    res.status(401).json('Token is not provided. Not authorized. ');
     return;
   }
 
@@ -72,4 +93,4 @@ const listLanguages = asnycHandler(async (req, res) => {
   res.status(200).json(languagesArr);
 });
 
-export { getRepos, listLanguages };
+export { getRepos, listLanguages, getStarredRpoes };

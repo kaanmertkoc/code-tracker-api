@@ -9,8 +9,8 @@ const getTotalLines = asnycHandler(async (req, res) => {
 
   console.log(repos);
 
-  if (access_token === undefined || access_token === "") {
-    res.status(401).json("Token is not provided. Not authorized. ");
+  if (access_token === undefined || access_token === '') {
+    res.status(401).json('Token is not provided. Not authorized. ');
     return;
   }
   let totalLine = 0;
@@ -18,7 +18,7 @@ const getTotalLines = asnycHandler(async (req, res) => {
   for (let i = 0; i < repos.length; i++) {
     console.log(repos[i]);
     const { data } = await axios.post(
-      "http://localhost:5000/api/commits/stats",
+      'http://localhost:5002/api/commits/stats',
       { repoName: repos[i], access_token }
     );
 

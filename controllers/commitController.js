@@ -6,19 +6,23 @@ dotenv.config();
 
 const getCommits = asnycHandler(async (req, res) => {
   const { repoName, access_token } = req.body;
-  const [owner, repo] = repoName.split("/");
+  const [owner, repo] = repoName.split('/');
 
   const octokit = new Octokit({
     auth: access_token,
   });
 
-  const { data } = await octokit.repos.listCommits({ owner, repo });
+  const { data } = await octokit.repos.listCommitCommentsForRepo({
+    owner,
+    repo,
+    per_page: 100,
+  });
   res.status(201).json(data);
 });
 
 const getWeeklyCommits = asnycHandler(async (req, res) => {
   const { repoName, access_token } = req.body;
-  const [owner, repo] = repoName.split("/");
+  const [owner, repo] = repoName.split('/');
 
   const octokit = new Octokit({
     auth: access_token,
@@ -33,21 +37,26 @@ const getWeeklyCommits = asnycHandler(async (req, res) => {
 
 const getCommitDetail = asnycHandler(async (req, res) => {
   const { repoName, access_token } = req.body;
-  const [owner, repo] = repoName.split("/");
+  const [owner, repo] = repoName.split('/');
 
   const octokit = new Octokit({
     auth: access_token,
   });
+
+  console.log('owner ', owner, repo);
 
   let { data } = await octokit.rest.repos.getCodeFrequencyStats({
     owner,
     repo,
   });
 
+  console.log('data ', data);
+
   if (data === undefined) {
     res.status(200).json([[]]);
   } else {
     while (data.status === 202) {
+      console.log('data status ', data.status);
       await octokit.rest.repos.getCodeFrequencyStats({
         owner,
         repo,
